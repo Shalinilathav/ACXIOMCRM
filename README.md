@@ -32,31 +32,43 @@ git clone https://github.com/Shalinilathav/ACXIOMCRM.git
 cd ACXIOMCRM
 ```
 
-### 2. Restore dependencies
+### 2. Run the application
 
-```bash
-dotnet restore
-```
-
-### 3. Run the application
-
+**If .NET SDK is in PATH:**
 ```bash
 dotnet run --urls "http://localhost:5000"
 ```
 
+**If using custom .NET location (Windows):**
+```powershell
+$env:DOTNET_ROOT = "C:\Users\Vamsi\.dotnet"
+$env:PATH = "C:\Users\Vamsi\.dotnet;$env:PATH"
+dotnet run --project AcxiomCRM.csproj --urls "http://localhost:5000"
+```
+
+**Using the full path to the project (cross-platform):**
+```bash
+dotnet run --project /path/to/AcxiomCRM.csproj --urls "http://localhost:5000"
+```
+
 The database is created and seed users are created automatically on first run.
 
-### 4. Open in browser
+### 3. Open in browser
 
 Navigate to:
 ```
 http://localhost:5000
 ```
 
-The app will:
-- Create `AcxiomCRM.db` SQLite database automatically
-- Run EF Core migrations
-- Seed default Admin, Manager, and Sales Executive users
+The app will automatically:
+- ✅ Create `AcxiomCRM.db` SQLite database
+- ✅ Run EF Core migrations
+- ✅ Seed default users (Admin, Manager, Sales Executive)
+- ✅ Create required roles (Admin, Manager, SalesExecutive)
+
+### 4. Stop the application
+
+Press `Ctrl+C` in the terminal where the app is running.
 
 ---
 
