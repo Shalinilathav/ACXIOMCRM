@@ -25,26 +25,38 @@ A role-based CRM web application built with **ASP.NET Core 8 MVC**, covering the
 
 ## Getting Started
 
-### 1. Clone / Open the project
+### 1. Clone the repository
 
+```bash
+git clone https://github.com/Shalinilathav/ACXIOMCRM.git
+cd ACXIOMCRM
 ```
-d:\AcxiomCRM\
+
+### 2. Restore dependencies
+
+```bash
+dotnet restore
 ```
 
-### 2. Run the application
+### 3. Run the application
 
-```powershell
-cd d:\AcxiomCRM\AcxiomCRM
+```bash
 dotnet run --urls "http://localhost:5000"
 ```
 
 The database is created and seed users are created automatically on first run.
 
-### 3. Open in browser
+### 4. Open in browser
 
+Navigate to:
 ```
 http://localhost:5000
 ```
+
+The app will:
+- Create `AcxiomCRM.db` SQLite database automatically
+- Run EF Core migrations
+- Seed default Admin, Manager, and Sales Executive users
 
 ---
 
@@ -205,4 +217,52 @@ AcxiomCRM/
 
 ## Database
 
-SQLite database is auto-created at `d:\AcxiomCRM\AcxiomCRM\AcxiomCRM.db` on first run. No manual migration steps required — migrations run automatically at startup.
+SQLite database is auto-created as `AcxiomCRM.db` on first run. No manual migration steps required — migrations run automatically at startup.
+
+---
+
+## Development Notes
+
+### Project Structure
+This is an ASP.NET Core 8 MVC application with:
+- **Authentication**: ASP.NET Core Identity with role-based access (Admin, Manager, Sales Executive)
+- **Database**: SQLite with Entity Framework Core migrations
+- **API**: RESTful endpoints for programmatic access
+- **UI**: Server-side rendered Razor views with Bootstrap 5
+
+### Running Migrations Manually
+If you need to add new migrations:
+
+```bash
+# Add a migration
+dotnet ef migrations add MigrationName
+
+# Update database
+dotnet ef database update
+```
+
+### Building for Production
+
+```bash
+# Build in Release mode
+dotnet build -c Release
+
+# Publish self-contained application
+dotnet publish -c Release -o ./publish
+```
+
+---
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -m 'Add some feature'`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a Pull Request
+
+---
+
+## License
+
+This project is for educational/demonstration purposes.
