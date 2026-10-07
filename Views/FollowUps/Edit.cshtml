@@ -1,0 +1,134 @@
+@model AcxiomCRM.Models.FollowUp
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    ViewData["Title"] = "Edit Follow-Up";
+    var assignedList = ViewData["AssignedToList"] as IEnumerable<SelectListItem>;
+    var customerList = ViewData["CustomerId"] as IEnumerable<SelectListItem>;
+    var leadList     = ViewData["LeadId"]     as IEnumerable<SelectListItem>;
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex align-items-center mb-3">
+        <a asp-action="Index" class="btn btn-outline-secondary me-3">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <h2 class="fw-bold text-warning mb-0"><i class="bi bi-pencil-square me-2"></i>Edit Follow-Up</h2>
+    </div>
+
+    <div class="card shadow-sm" style="max-width: 750px;">
+        <div class="card-body">
+            <form asp-action="Edit" method="post" id="editFollowUpForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="FollowUpId" />
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="FollowUpDate" class="form-label fw-semibold">Follow-Up Date <span class="text-danger">*</span></label>
+                        <input asp-for="FollowUpDate" type="date" class="form-control" id="followUpDate" />
+                        <span asp-validation-for="FollowUpDate" class="text-danger small"></span>
+                        <div id="dateError" class="text-danger small" style="display:none;">
+                            Follow-up date cannot be in the past.
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="FollowUpType" class="form-label fw-semibold">Follow-Up Type <span class="text-danger">*</span></label>
+                        <select asp-for="FollowUpType" class="form-select">
+                            <option value="">-- Select Type --</option>
+                            <option value="Call">Call</option>
+                            <option value="Email">Email</option>
+                            <option value="Meeting">Meeting</option>
+                            <option value="Visit">Visit</option>
+                        </select>
+                        <span asp-validation-for="FollowUpType" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Subject" class="form-label fw-semibold">Subject <span class="text-danger">*</span></label>
+                        <input asp-for="Subject" class="form-control" placeholder="Enter subject..." />
+                        <span asp-validation-for="Subject" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Status" class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
+                        <select asp-for="Status" class="form-select">
+                            <option value="Planned">Planned</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Missed">Missed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="AssignedTo" class="form-label fw-semibold">Assigned To</label>
+                        <select asp-for="AssignedTo" class="form-select"
+                                asp-items="@assignedList">
+                            <option value="">-- Select User --</option>
+                        </select>
+                        <span asp-validation-for="AssignedTo" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="CustomerId" class="form-label fw-semibold">Customer <small class="text-muted">(optional)</small></label>
+                        <select asp-for="CustomerId" class="form-select"
+                                asp-items="@customerList">
+                            <option value="">-- None --</option>
+                        </select>
+                        <span asp-validation-for="CustomerId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="LeadId" class="form-label fw-semibold">Lead <small class="text-muted">(optional)</small></label>
+                        <select asp-for="LeadId" class="form-select"
+                                asp-items="@leadList">
+                            <option value="">-- None --</option>
+                        </select>
+                        <span asp-validation-for="LeadId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Remarks" class="form-label fw-semibold">Remarks</label>
+                        <textarea asp-for="Remarks" class="form-control" rows="4"
+                                  placeholder="Additional notes or remarks..."></textarea>
+                        <span asp-validation-for="Remarks" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-save me-1"></i>Save Changes
+                    </button>
+                    <a asp-action="Details" asp-route-id="@Model.FollowUpId" class="btn btn-outline-info">
+                        <i class="bi bi-eye me-1"></i>View Details
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('followUpDate');
+
+            document.getElementById('editFollowUpForm').addEventListener('submit', function (e) {
+                const val = dateInput.value;
+                const dateError = document.getElementById('dateError');
+                if (val && val < today) {
+                    e.preventDefault();
+                    dateError.style.display = 'block';
+                    dateInput.classList.add('is-invalid');
+                } else {
+                    dateError.style.display = 'none';
+                    dateInput.classList.remove('is-invalid');
+                }
+            });
+        });
+    </script>
+}

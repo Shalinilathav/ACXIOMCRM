@@ -1,0 +1,147 @@
+@model IEnumerable<AcxiomCRM.Models.Opportunity>
+@{
+    ViewData["Title"] = "Opportunity Report";
+    decimal totalAmount = Model.Sum(o => o.Amount);
+    decimal totalWeighted = Model.Sum(o => o.Amount * (decimal)(o.Probability / 100.0));
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold text-primary"><i class="bi bi-graph-up-arrow me-2"></i>Opportunity Report</h2>
+        <a href="javascript:window.print()" class="btn btn-outline-secondary">
+            <i class="bi bi-printer me-1"></i>Print
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="OpportunityReport" class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Stage</label>
+                    <select name="stage" class="form-select">
+                        <option value="">-- All --</option>
+                        <option value="Prospecting" selected="@(Context.Request.Query["stage"] == "Prospecting" ? "selected" : null)">Prospecting</option>
+                        <option value="Qualification" selected="@(Context.Request.Query["stage"] == "Qualification" ? "selected" : null)">Qualification</option>
+                        <option value="Proposal" selected="@(Context.Request.Query["stage"] == "Proposal" ? "selected" : null)">Proposal</option>
+                        <option value="Negotiation" selected="@(Context.Request.Query["stage"] == "Negotiation" ? "selected" : null)">Negotiation</option>
+                        <option value="Closed Won" selected="@(Context.Request.Query["stage"] == "Closed Won" ? "selected" : null)">Closed Won</option>
+                        <option value="Closed Lost" selected="@(Context.Request.Query["stage"] == "Closed Lost" ? "selected" : null)">Closed Lost</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">-- All --</option>
+                        <option value="Open" selected="@(Context.Request.Query["status"] == "Open" ? "selected" : null)">Open</option>
+                        <option value="Won" selected="@(Context.Request.Query["status"] == "Won" ? "selected" : null)">Won</option>
+                        <option value="Lost" selected="@(Context.Request.Query["status"] == "Lost" ? "selected" : null)">Lost</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Close From</label>
+                    <input type="date" name="fromDate" class="form-control" value="@Context.Request.Query["fromDate"]" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Close To</label>
+                    <input type="date" name="toDate" class="form-control" value="@Context.Request.Query["toDate"]" />
+                </div>
+                <div class="col-md-4 d-flex gap-2 align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-1"></i>Filter
+                    </button>
+                    <a asp-action="OpportunityReport" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="alert alert-info d-flex align-items-center mb-3 py-2">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        <strong>@Model.Count()</strong>&nbsp;opportunity/ies found.
+    </div>
+
+    <!-- Table -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox fs-1"></i>
+                    <p class="mt-2">No opportunities match the selected filters.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Opportunity Name</th>
+                                <th>Stage</th>
+                                <th class="text-end">Amount</th>
+                                <th class="text-center">Probability %</th>
+                                <th class="text-end">Weighted Amount</th>
+                                <th>Expected Close</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{int idx = 1;}
+                            @foreach (var opp in Model)
+                            {
+                                decimal weighted = opp.Amount * (decimal)(opp.Probability / 100.0);
+                                string stageBadge = opp.Stage switch
+                                {
+                                    "Prospecting" => "bg-secondary",
+                                    "Qualification" => "bg-info text-dark",
+                                    "Proposal" => "bg-primary",
+                                    "Negotiation" => "bg-warning text-dark",
+                                    "Closed Won" => "bg-success",
+                                    "Closed Lost" => "bg-danger",
+                                    _ => "bg-secondary"
+                                };
+                                string statusBadge = opp.Status switch
+                                {
+                                    "Open" => "bg-primary",
+                                    "Won" => "bg-success",
+                                    "Lost" => "bg-danger",
+                                    _ => "bg-secondary"
+                                };
+                                <tr>
+                                    <td class="text-muted small">@idx</td>
+                                    <td><strong>@opp.OpportunityName</strong></td>
+                                    <td><span class="badge @stageBadge">@opp.Stage</span></td>
+                                    <td class="text-end">@opp.Amount.ToString("C0")</td>
+                                    <td class="text-center">
+                                        <div class="progress" style="height:16px;" title="@opp.Probability%">
+                                            <div class="progress-bar" role="progressbar" style="width:@opp.Probability%">
+                                                @opp.Probability%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-end fw-semibold">@weighted.ToString("C0")</td>
+                                    <td>@opp.ExpectedCloseDate.ToString("dd MMM yyyy")</td>
+                                    <td><span class="badge @statusBadge">@opp.Status</span></td>
+                                </tr>
+                                idx++;
+                            }
+                        </tbody>
+                        <tfoot class="table-light fw-bold">
+                            <tr>
+                                <td colspan="3" class="text-end">Totals:</td>
+                                <td class="text-end">@totalAmount.ToString("C0")</td>
+                                <td></td>
+                                <td class="text-end">@totalWeighted.ToString("C0")</td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

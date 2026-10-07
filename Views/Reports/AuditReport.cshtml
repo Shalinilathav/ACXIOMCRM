@@ -1,0 +1,142 @@
+@model IEnumerable<AcxiomCRM.Models.AuditLog>
+@{
+    ViewData["Title"] = "Audit Report";
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="fw-bold text-primary mb-0"><i class="bi bi-shield-check me-2"></i>Audit Report</h2>
+            <span class="badge bg-warning text-dark mt-1">
+                <i class="bi bi-shield-lock me-1"></i>Admin Only
+            </span>
+        </div>
+        <a href="javascript:window.print()" class="btn btn-outline-secondary">
+            <i class="bi bi-printer me-1"></i>Print
+        </a>
+    </div>
+
+    <div class="alert alert-warning d-flex align-items-start mb-4">
+        <i class="bi bi-exclamation-triangle-fill me-2 mt-1 fs-5"></i>
+        <div>
+            <strong>Restricted Report.</strong> This audit report contains sensitive system activity data.
+            Access is restricted to Administrators only.
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="AuditReport" class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">User</label>
+                    <input type="text" name="user" class="form-control" placeholder="Username..."
+                           value="@Context.Request.Query["user"]" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Module</label>
+                    <input type="text" name="module" class="form-control" placeholder="Module..."
+                           value="@Context.Request.Query["module"]" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Action</label>
+                    <input type="text" name="action" class="form-control" placeholder="Action..."
+                           value="@Context.Request.Query["action"]" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Result</label>
+                    <select name="result" class="form-select">
+                        <option value="">-- All --</option>
+                        <option value="Success" selected="@(Context.Request.Query["result"] == "Success" ? "selected" : null)">Success</option>
+                        <option value="Failed" selected="@(Context.Request.Query["result"] == "Failed" ? "selected" : null)">Failed</option>
+                        <option value="LockedOut" selected="@(Context.Request.Query["result"] == "LockedOut" ? "selected" : null)">LockedOut</option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label fw-semibold">From</label>
+                    <input type="date" name="fromDate" class="form-control" value="@Context.Request.Query["fromDate"]" />
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label fw-semibold">To</label>
+                    <input type="date" name="toDate" class="form-control" value="@Context.Request.Query["toDate"]" />
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-1"></i>Filter
+                    </button>
+                    <a asp-action="AuditReport" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="alert alert-info d-flex align-items-center mb-3 py-2">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        <strong>@Model.Count()</strong>&nbsp;log entry/ies found.
+        &nbsp;|&nbsp;
+        <span class="text-success fw-semibold ms-1">@Model.Count(l => l.Result == "Success") Success</span>
+        &nbsp;|&nbsp;
+        <span class="text-danger fw-semibold">@Model.Count(l => l.Result != "Success") Failed/LockedOut</span>
+    </div>
+
+    <!-- Table -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-journal-x fs-1"></i>
+                    <p class="mt-2">No audit entries match the filters.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered table-sm align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Date/Time</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Module</th>
+                                <th>Record ID</th>
+                                <th>Result</th>
+                                <th>IP Address</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{int idx = 1;}
+                            @foreach (var log in Model)
+                            {
+                                string resultBadge = log.Result switch
+                                {
+                                    "Success" => "bg-success",
+                                    "Failed" => "bg-danger",
+                                    "LockedOut" => "bg-danger",
+                                    _ => "bg-secondary"
+                                };
+                                <tr class="@(log.Result != "Success" ? "table-danger" : "")">
+                                    <td class="text-muted small">@idx</td>
+                                    <td class="text-nowrap small">@log.CreatedDate.ToString("dd MMM yyyy HH:mm")</td>
+                                    <td class="small fw-semibold">@log.UserName</td>
+                                    <td><span class="badge bg-info text-dark">@log.Action</span></td>
+                                    <td class="small">@log.EntityName</td>
+                                    <td class="small text-muted">@log.RecordId</td>
+                                    <td><span class="badge @resultBadge">@log.Result</span></td>
+                                    <td class="small text-muted">@log.IpAddress</td>
+                                    <td class="small" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                                        title="@log.Details">@log.Details</td>
+                                </tr>
+                                idx++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

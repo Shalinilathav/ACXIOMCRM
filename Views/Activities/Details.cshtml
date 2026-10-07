@@ -1,0 +1,88 @@
+@model AcxiomCRM.Models.Activity
+@{
+    ViewData["Title"] = "Activity Details";
+    string typeBadge = Model.ActivityType switch
+    {
+        "Call" => "bg-success",
+        "Email" => "bg-info text-dark",
+        "Meeting" => "bg-warning text-dark",
+        "Task" => "bg-secondary",
+        _ => "bg-secondary"
+    };
+    string statusBadge = Model.Status switch
+    {
+        "Open" => "bg-primary",
+        "Completed" => "bg-success",
+        "Cancelled" => "bg-secondary",
+        _ => "bg-secondary"
+    };
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex align-items-center mb-3">
+        <a asp-action="Index" class="btn btn-outline-secondary me-3">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <h2 class="fw-bold text-info mb-0"><i class="bi bi-activity me-2"></i>Activity Details</h2>
+    </div>
+
+    <div class="card shadow-sm" style="max-width: 750px;">
+        <div class="card-header d-flex justify-content-between align-items-center bg-light">
+            <div>
+                <span class="badge @typeBadge me-2">@Model.ActivityType</span>
+                <strong>@Model.Subject</strong>
+            </div>
+            <span class="badge @statusBadge fs-6">@Model.Status</span>
+        </div>
+        <div class="card-body">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-semibold text-uppercase">Activity Type</label>
+                    <p><span class="badge @typeBadge fs-6">@Model.ActivityType</span></p>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-semibold text-uppercase">Activity Date</label>
+                    <p class="fs-6 fw-semibold">@Model.ActivityDate.ToString("dd MMM yyyy")</p>
+                </div>
+                <div class="col-12">
+                    <label class="form-label text-muted small fw-semibold text-uppercase">Subject</label>
+                    <p class="fs-6">@Model.Subject</p>
+                </div>
+                <div class="col-12">
+                    <label class="form-label text-muted small fw-semibold text-uppercase">Description</label>
+                    <p class="fs-6 border rounded p-2 bg-light">
+                        @(string.IsNullOrWhiteSpace(Model.Description) ? "No description provided." : Model.Description)
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-semibold text-uppercase">Status</label>
+                    <p><span class="badge @statusBadge fs-6">@Model.Status</span></p>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-semibold text-uppercase">Assigned To</label>
+                    <p class="fs-6">@(Model.AssignedTo ?? "-")</p>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-semibold text-uppercase">Customer</label>
+                    <p class="fs-6">@(Model.Customer != null ? Model.Customer.CustomerName : "-")</p>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-semibold text-uppercase">Lead</label>
+                    <p class="fs-6">@(Model.Lead != null ? Model.Lead.LeadName : "-")</p>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-semibold text-uppercase">Created Date</label>
+                    <p class="fs-6 text-muted">@Model.CreatedDate.ToString("dd MMM yyyy hh:mm tt")</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer d-flex gap-2 bg-light">
+            <a asp-action="Edit" asp-route-id="@Model.ActivityId" class="btn btn-warning">
+                <i class="bi bi-pencil me-1"></i>Edit
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to List
+            </a>
+        </div>
+    </div>
+</div>

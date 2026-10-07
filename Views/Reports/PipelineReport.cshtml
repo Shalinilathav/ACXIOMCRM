@@ -1,0 +1,184 @@
+@{
+    ViewData["Title"] = "Pipeline Report";
+    var stageData = ViewBag.StageData as List<dynamic> ?? new List<dynamic>();
+    var ownerData = ViewBag.OwnerData as List<dynamic> ?? new List<dynamic>();
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold text-primary"><i class="bi bi-bar-chart-line me-2"></i>Pipeline Report</h2>
+        <a href="javascript:window.print()" class="btn btn-outline-secondary">
+            <i class="bi bi-printer me-1"></i>Print
+        </a>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Stage-wise Pipeline -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white fw-semibold">
+                    <i class="bi bi-layers me-2"></i>Pipeline by Stage
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Stage</th>
+                                    <th class="text-center">Count</th>
+                                    <th class="text-end">Total Amount</th>
+                                    <th class="text-end">Weighted Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (stageData.Count == 0)
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-3">No data available.</td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    foreach (var row in stageData)
+                                    {
+                                        string badge = ((string)row.Stage) switch
+                                        {
+                                            "Prospecting" => "bg-secondary",
+                                            "Qualification" => "bg-info text-dark",
+                                            "Proposal" => "bg-primary",
+                                            "Negotiation" => "bg-warning text-dark",
+                                            "Closed Won" => "bg-success",
+                                            "Closed Lost" => "bg-danger",
+                                            _ => "bg-secondary"
+                                        };
+                                        <tr>
+                                            <td><span class="badge @badge">@row.Stage</span></td>
+                                            <td class="text-center">@row.Count</td>
+                                            <td class="text-end">@((decimal)row.TotalAmount).ToString("C0")</td>
+                                            <td class="text-end fw-semibold">@((decimal)row.WeightedAmount).ToString("C0")</td>
+                                        </tr>
+                                    }
+                                    <tr class="table-light fw-bold">
+                                        <td>Total</td>
+                                        <td class="text-center">@stageData.Sum(r => (int)r.Count)</td>
+                                        <td class="text-end">@stageData.Sum(r => (decimal)r.TotalAmount).ToString("C0")</td>
+                                        <td class="text-end">@stageData.Sum(r => (decimal)r.WeightedAmount).ToString("C0")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Owner-wise Pipeline -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-success text-white fw-semibold">
+                    <i class="bi bi-person-lines-fill me-2"></i>Pipeline by Owner
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Owner</th>
+                                    <th class="text-center">Count</th>
+                                    <th class="text-end">Total Amount</th>
+                                    <th class="text-end">Weighted Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (ownerData.Count == 0)
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-3">No data available.</td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    foreach (var row in ownerData)
+                                    {
+                                        <tr>
+                                            <td>@row.OwnerName</td>
+                                            <td class="text-center">@row.Count</td>
+                                            <td class="text-end">@((decimal)row.TotalAmount).ToString("C0")</td>
+                                            <td class="text-end fw-semibold">@((decimal)row.WeightedAmount).ToString("C0")</td>
+                                        </tr>
+                                    }
+                                    <tr class="table-light fw-bold">
+                                        <td>Total</td>
+                                        <td class="text-center">@ownerData.Sum(r => (int)r.Count)</td>
+                                        <td class="text-end">@ownerData.Sum(r => (decimal)r.TotalAmount).ToString("C0")</td>
+                                        <td class="text-end">@ownerData.Sum(r => (decimal)r.WeightedAmount).ToString("C0")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js Bar Chart -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white fw-semibold">
+            <i class="bi bi-bar-chart-fill me-2"></i>Pipeline by Stage — Bar Chart
+        </div>
+        <div class="card-body">
+            <canvas id="pipelineChart" height="100"></canvas>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        const stageLabels = [@Html.Raw(string.Join(",", stageData.Select(r => $"'{r.Stage}'")))];
+        const stageAmounts = [@Html.Raw(string.Join(",", stageData.Select(r => (decimal)r.TotalAmount)))];
+        const weightedAmounts = [@Html.Raw(string.Join(",", stageData.Select(r => (decimal)r.WeightedAmount)))];
+
+        const ctx = document.getElementById('pipelineChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: stageLabels,
+                datasets: [
+                    {
+                        label: 'Total Amount',
+                        data: stageAmounts,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Weighted Amount',
+                        data: weightedAmounts,
+                        backgroundColor: 'rgba(75, 192, 92, 0.7)',
+                        borderColor: 'rgba(75, 192, 92, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    title: { display: true, text: 'Pipeline Amount by Stage' }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (val) {
+                                return '$' + val.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}

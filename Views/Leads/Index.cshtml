@@ -1,0 +1,129 @@
+@model IEnumerable<AcxiomCRM.Models.Lead>
+@{
+    ViewData["Title"] = "Leads";
+    var statuses = new[] { "New", "Contacted", "Qualified", "Unqualified", "Converted", "Lost" };
+    var statusColors = new Dictionary<string, string> {
+        ["New"]="primary", ["Contacted"]="info", ["Qualified"]="success",
+        ["Unqualified"]="warning", ["Converted"]="dark", ["Lost"]="danger"
+    };
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-bullseye text-success me-2"></i>Leads</h2>
+    <a asp-action="Create" class="btn btn-success"><i class="fas fa-plus me-1"></i>New Lead</a>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small">Lead Name</label>
+                <input type="text" name="leadName" value="@ViewData["LeadName"]" class="form-control form-control-sm" placeholder="Search name..." />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Company</label>
+                <input type="text" name="company" value="@ViewData["Company"]" class="form-control form-control-sm" placeholder="Company..." />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Status</label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">All Statuses</option>
+                    @foreach (var s in statuses)
+                    {
+                        <option value="@s" selected="@(ViewData["Status"]?.ToString() == s ? "selected" : null)">@s</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Priority</label>
+                <select name="priority" class="form-select form-select-sm">
+                    <option value="">All Priorities</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-1">
+                <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fas fa-search me-1"></i>Search</button>
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between">
+        <span>Leads <span class="badge bg-secondary">@Model.Count()</span></span>
+    </div>
+    <div class="card-body p-0">
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5 text-muted"><i class="fas fa-inbox fa-3x mb-3"></i><p>No leads found.</p></div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Code</th><th>Lead Name</th><th>Email</th><th>Phone</th>
+                            <th>Source</th><th>Status</th><th>Priority</th>
+                            <th>Expected Value</th><th>Converted</th><th>Created</th><th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var lead in Model)
+                        {
+                            var color = statusColors.ContainsKey(lead.Status) ? statusColors[lead.Status] : "secondary";
+                            <tr>
+                                <td><small class="text-muted">@lead.LeadCode</small></td>
+                                <td class="fw-semibold">@lead.LeadName<br/><small class="text-muted">@lead.CompanyName</small></td>
+                                <td><small>@lead.Email</small></td>
+                                <td>@lead.Phone</td>
+                                <td>@lead.Source</td>
+                                <td><span class="badge bg-@color">@lead.Status</span></td>
+                                <td>
+                                    @{
+                                        var priClass = lead.Priority == "High" ? "danger" : lead.Priority == "Medium" ? "warning" : "secondary";
+                                    }
+                                    <span class="badge bg-@priClass text-@(lead.Priority == "Medium" ? "dark" : "white")">@lead.Priority</span>
+                                </td>
+                                <td>₹@lead.ExpectedValue.ToString("N0")</td>
+                                <td>
+                                    @if (lead.IsConverted)
+                                    {
+                                        <span class="badge bg-success"><i class="fas fa-check"></i></span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-muted">No</span>
+                                    }
+                                </td>
+                                <td><small>@lead.CreatedDate.ToString("dd MMM yy")</small></td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <a asp-action="Details" asp-route-id="@lead.LeadId" class="btn btn-sm btn-outline-primary" title="View"><i class="fas fa-eye"></i></a>
+                                        <a asp-action="Edit" asp-route-id="@lead.LeadId" class="btn btn-sm btn-outline-warning" title="Edit"><i class="fas fa-edit"></i></a>
+                                        @if (lead.Status == "Qualified" && !lead.IsConverted)
+                                        {
+                                            <form asp-action="ConvertLead" asp-route-id="@lead.LeadId" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Convert this lead to customer?')">
+                                                <button type="submit" class="btn btn-sm btn-success" title="Convert"><i class="fas fa-exchange-alt"></i></button>
+                                            </form>
+                                        }
+                                        @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                                        {
+                                            <form asp-action="Delete" asp-route-id="@lead.LeadId" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Delete this lead permanently?')">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

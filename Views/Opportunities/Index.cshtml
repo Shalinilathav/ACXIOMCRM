@@ -1,0 +1,156 @@
+@model IEnumerable<AcxiomCRM.Models.Opportunity>
+@{
+    ViewData["Title"] = "Opportunities";
+    var stages = new[] { "Qualification", "Proposal", "Negotiation", "Won", "Lost" };
+    var stageColors = new Dictionary<string, string> {
+        ["Qualification"]="primary", ["Proposal"]="info", ["Negotiation"]="warning",
+        ["Won"]="success", ["Lost"]="danger"
+    };
+    var totalPipeline = Model.Where(o => o.Stage != "Lost").Sum(o => o.Amount);
+    var totalWeighted = Model.Where(o => o.Stage != "Lost").Sum(o => o.WeightedAmount);
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chart-line text-purple me-2" style="color:#6f42c1"></i>Opportunities</h2>
+    <a asp-action="Create" class="btn btn-primary"><i class="fas fa-plus me-1"></i>New Opportunity</a>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-4">
+        <div class="card border-0 bg-primary text-white text-center p-3">
+            <div class="fs-4 fw-bold">₹@totalPipeline.ToString("N0")</div>
+            <div class="small">Total Pipeline</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 bg-success text-white text-center p-3">
+            <div class="fs-4 fw-bold">₹@totalWeighted.ToString("N0")</div>
+            <div class="small">Weighted Pipeline</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 bg-info text-white text-center p-3">
+            <div class="fs-4 fw-bold">@Model.Count()</div>
+            <div class="small">Total Opportunities</div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small">Opportunity Name</label>
+                <input type="text" name="name" value="@ViewData["Name"]" class="form-control form-control-sm" placeholder="Search..." />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Customer</label>
+                <input type="text" name="customer" value="@ViewData["Customer"]" class="form-control form-control-sm" placeholder="Customer name..." />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Stage</label>
+                <select name="stage" class="form-select form-select-sm">
+                    <option value="">All Stages</option>
+                    @foreach (var s in stages)
+                    {
+                        <option value="@s" selected="@(ViewData["Stage"]?.ToString() == s ? "selected" : null)">@s</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Status</label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">All</option>
+                    <option value="Open">Open</option>
+                    <option value="Won">Won</option>
+                    <option value="Lost">Lost</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-1">
+                <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fas fa-search me-1"></i>Filter</button>
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5 text-muted"><i class="fas fa-inbox fa-3x mb-3"></i><p>No opportunities found.</p></div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th><th>Customer</th><th>Stage</th>
+                            <th>Amount</th><th>Probability</th><th>Weighted</th>
+                            <th>Close Date</th><th>Status</th><th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var opp in Model)
+                        {
+                            var stageColor = stageColors.ContainsKey(opp.Stage) ? stageColors[opp.Stage] : "secondary";
+                            var isOverdue = opp.ExpectedCloseDate < DateTime.Today && opp.Stage != "Won" && opp.Stage != "Lost";
+                            <tr class="@(isOverdue ? "table-warning" : "")">
+                                <td class="fw-semibold">
+                                    @opp.OpportunityName
+                                    @if (isOverdue)
+                                    {
+                                        <span class="badge bg-danger ms-1" title="Overdue"><i class="fas fa-exclamation-triangle"></i></span>
+                                    }
+                                </td>
+                                <td><small>@(opp.Customer?.CustomerName ?? "—")</small></td>
+                                <td><span class="badge bg-@stageColor">@opp.Stage</span></td>
+                                <td class="fw-semibold">₹@opp.Amount.ToString("N0")</td>
+                                <td>
+                                    <div class="progress" style="height:6px;width:60px">
+                                        <div class="progress-bar bg-success" style="width:@opp.Probability%"></div>
+                                    </div>
+                                    <small class="text-muted">@opp.Probability%</small>
+                                </td>
+                                <td class="text-success">₹@opp.WeightedAmount.ToString("N0")</td>
+                                <td>
+                                    <small class="@(isOverdue ? "text-danger fw-bold" : "")">
+                                        @opp.ExpectedCloseDate.ToString("dd MMM yyyy")
+                                    </small>
+                                </td>
+                                <td>
+                                    @{
+                                        var statusClass = opp.Status == "Won" ? "success" : opp.Status == "Lost" ? "danger" : "info";
+                                    }
+                                    <span class="badge bg-@statusClass">@opp.Status</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <a asp-action="Details" asp-route-id="@opp.OpportunityId" class="btn btn-sm btn-outline-primary" title="View"><i class="fas fa-eye"></i></a>
+                                        <a asp-action="Edit" asp-route-id="@opp.OpportunityId" class="btn btn-sm btn-outline-warning" title="Edit"><i class="fas fa-edit"></i></a>
+                                        @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                                        {
+                                            <form asp-action="Delete" asp-route-id="@opp.OpportunityId" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Delete this opportunity?')">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="table-light fw-bold">
+                        <tr>
+                            <td colspan="3">Totals</td>
+                            <td>₹@totalPipeline.ToString("N0")</td>
+                            <td></td>
+                            <td class="text-success">₹@totalWeighted.ToString("N0")</td>
+                            <td colspan="3"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        }
+    </div>
+</div>

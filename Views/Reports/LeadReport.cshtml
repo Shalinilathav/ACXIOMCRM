@@ -1,0 +1,149 @@
+@model IEnumerable<AcxiomCRM.Models.Lead>
+@{
+    ViewData["Title"] = "Lead Report";
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold text-primary"><i class="bi bi-funnel me-2"></i>Lead Report</h2>
+        <a href="javascript:window.print()" class="btn btn-outline-secondary">
+            <i class="bi bi-printer me-1"></i>Print
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="LeadReport" class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">-- All --</option>
+                        <option value="New" selected="@(Context.Request.Query["status"] == "New" ? "selected" : null)">New</option>
+                        <option value="Contacted" selected="@(Context.Request.Query["status"] == "Contacted" ? "selected" : null)">Contacted</option>
+                        <option value="Qualified" selected="@(Context.Request.Query["status"] == "Qualified" ? "selected" : null)">Qualified</option>
+                        <option value="Lost" selected="@(Context.Request.Query["status"] == "Lost" ? "selected" : null)">Lost</option>
+                        <option value="Converted" selected="@(Context.Request.Query["status"] == "Converted" ? "selected" : null)">Converted</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Source</label>
+                    <select name="source" class="form-select">
+                        <option value="">-- All --</option>
+                        <option value="Web" selected="@(Context.Request.Query["source"] == "Web" ? "selected" : null)">Web</option>
+                        <option value="Referral" selected="@(Context.Request.Query["source"] == "Referral" ? "selected" : null)">Referral</option>
+                        <option value="Cold Call" selected="@(Context.Request.Query["source"] == "Cold Call" ? "selected" : null)">Cold Call</option>
+                        <option value="Campaign" selected="@(Context.Request.Query["source"] == "Campaign" ? "selected" : null)">Campaign</option>
+                        <option value="Other" selected="@(Context.Request.Query["source"] == "Other" ? "selected" : null)">Other</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Priority</label>
+                    <select name="priority" class="form-select">
+                        <option value="">-- All --</option>
+                        <option value="High" selected="@(Context.Request.Query["priority"] == "High" ? "selected" : null)">High</option>
+                        <option value="Medium" selected="@(Context.Request.Query["priority"] == "Medium" ? "selected" : null)">Medium</option>
+                        <option value="Low" selected="@(Context.Request.Query["priority"] == "Low" ? "selected" : null)">Low</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">From Date</label>
+                    <input type="date" name="fromDate" class="form-control" value="@Context.Request.Query["fromDate"]" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">To Date</label>
+                    <input type="date" name="toDate" class="form-control" value="@Context.Request.Query["toDate"]" />
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-1"></i>Filter
+                    </button>
+                    <a asp-action="LeadReport" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="alert alert-info d-flex align-items-center mb-3 py-2">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        <strong>@Model.Count()</strong>&nbsp;lead(s) found.
+    </div>
+
+    <!-- Table -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox fs-1"></i>
+                    <p class="mt-2">No leads match the selected filters.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Lead Code</th>
+                                <th>Lead Name</th>
+                                <th>Source</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                                <th>Expected Value</th>
+                                <th>Converted</th>
+                                <th>Created Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{int idx = 1;}
+                            @foreach (var lead in Model)
+                            {
+                                string statusBadge = lead.Status switch
+                                {
+                                    "New" => "bg-primary",
+                                    "Contacted" => "bg-info text-dark",
+                                    "Qualified" => "bg-success",
+                                    "Lost" => "bg-danger",
+                                    "Converted" => "bg-warning text-dark",
+                                    _ => "bg-secondary"
+                                };
+                                string priorityBadge = lead.Priority switch
+                                {
+                                    "High" => "bg-danger",
+                                    "Medium" => "bg-warning text-dark",
+                                    "Low" => "bg-secondary",
+                                    _ => "bg-secondary"
+                                };
+                                <tr>
+                                    <td class="text-muted small">@idx</td>
+                                    <td><code>@lead.LeadCode</code></td>
+                                    <td><strong>@lead.LeadName</strong></td>
+                                    <td>@lead.Source</td>
+                                    <td><span class="badge @statusBadge">@lead.Status</span></td>
+                                    <td><span class="badge @priorityBadge">@lead.Priority</span></td>
+                                    <td>@lead.ExpectedValue.ToString("C0")</td>
+                                    <td>
+                                        @if (lead.IsConverted)
+                                        {
+                                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Yes</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">No</span>
+                                        }
+                                    </td>
+                                    <td>@lead.CreatedDate.ToString("dd MMM yyyy")</td>
+                                </tr>
+                                idx++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

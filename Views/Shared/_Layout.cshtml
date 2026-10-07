@@ -1,0 +1,549 @@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<AcxiomCRM.Models.ApplicationUser> SignInManager
+@inject UserManager<AcxiomCRM.Models.ApplicationUser> UserManager
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AcxiomCRM</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --sidebar-bg: #1a2035;
+            --sidebar-text: #c8ccd4;
+            --sidebar-hover: #2d3757;
+            --sidebar-active: #4e73df;
+            --topbar-height: 58px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6fb;
+            overflow-x: hidden;
+        }
+
+        /* ── Sidebar ── */
+        #sidebar {
+            width: var(--sidebar-width);
+            min-height: 100vh;
+            background-color: var(--sidebar-bg);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1030;
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #sidebar.collapsed {
+            transform: translateX(calc(-1 * var(--sidebar-width)));
+        }
+
+        .sidebar-brand {
+            padding: 1.25rem 1.5rem;
+            background-color: rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            color: #fff;
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .sidebar-brand i {
+            color: var(--sidebar-active);
+            font-size: 1.4rem;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem 0;
+        }
+
+        .sidebar-nav::-webkit-scrollbar { width: 4px; }
+        .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+        .nav-section-title {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(200,204,212,0.45);
+            padding: 1rem 1.5rem 0.3rem;
+        }
+
+        .sidebar-nav .nav-link {
+            color: var(--sidebar-text);
+            padding: 0.6rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-radius: 0;
+            font-size: 0.9rem;
+            transition: background 0.18s, color 0.18s;
+            position: relative;
+        }
+
+        .sidebar-nav .nav-link i {
+            width: 20px;
+            text-align: center;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-nav .nav-link:hover {
+            background-color: var(--sidebar-hover);
+            color: #fff;
+        }
+
+        .sidebar-nav .nav-link.active {
+            background-color: var(--sidebar-active);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .sidebar-nav .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: #fff;
+            border-radius: 0 2px 2px 0;
+        }
+
+        /* Dropdown items inside sidebar */
+        .sidebar-nav .dropdown-menu {
+            background-color: rgba(0,0,0,0.25);
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            position: static !important;
+            transform: none !important;
+        }
+
+        .sidebar-nav .dropdown-item {
+            color: var(--sidebar-text);
+            padding: 0.55rem 1.5rem 0.55rem 3.2rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .sidebar-nav .dropdown-item:hover {
+            background-color: var(--sidebar-hover);
+            color: #fff;
+        }
+
+        .sidebar-nav .dropdown-item.active,
+        .sidebar-nav .dropdown-item:active {
+            background-color: var(--sidebar-active);
+            color: #fff;
+        }
+
+        .sidebar-nav .nav-link[data-bs-toggle="collapse"] .fa-chevron-down {
+            margin-left: auto;
+            font-size: 0.7rem;
+            transition: transform 0.25s;
+        }
+
+        .sidebar-nav .nav-link[data-bs-toggle="collapse"]:not(.collapsed) .fa-chevron-down {
+            transform: rotate(180deg);
+        }
+
+        .sidebar-footer {
+            padding: 0.9rem 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            font-size: 0.75rem;
+            color: rgba(200,204,212,0.4);
+            text-align: center;
+        }
+
+        /* ── Top Navbar ── */
+        #topbar {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            height: var(--topbar-height);
+            background-color: #fff;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            z-index: 1020;
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            gap: 1rem;
+            transition: left 0.3s ease;
+        }
+
+        #topbar.expanded {
+            left: 0;
+        }
+
+        #sidebar-toggle {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #555;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            transition: background 0.18s;
+        }
+
+        #sidebar-toggle:hover {
+            background-color: #f0f0f0;
+        }
+
+        .topbar-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            flex: 1;
+        }
+
+        /* ── Main Content ── */
+        #main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--topbar-height);
+            padding: 1.75rem;
+            min-height: calc(100vh - var(--topbar-height));
+            transition: margin-left 0.3s ease;
+        }
+
+        #main-content.expanded {
+            margin-left: 0;
+        }
+
+        /* ── Overlay for mobile ── */
+        #sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 1025;
+        }
+
+        /* ── Toast container ── */
+        #toast-container {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        /* ── Responsive ── */
+        @@media (max-width: 991.98px) {
+            #sidebar {
+                transform: translateX(calc(-1 * var(--sidebar-width)));
+            }
+            #sidebar.open {
+                transform: translateX(0);
+            }
+            #topbar {
+                left: 0 !important;
+            }
+            #main-content {
+                margin-left: 0 !important;
+            }
+            #sidebar-overlay.visible {
+                display: block;
+            }
+        }
+
+        /* ── Card tweaks ── */
+        .card {
+            border: none;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+
+        /* ── Page header ── */
+        .page-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .page-header h2 {
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0;
+        }
+
+        /* ── Table tweaks ── */
+        .table-hover tbody tr:hover {
+            background-color: rgba(78, 115, 223, 0.05);
+        }
+
+        /* ── Badge pill ── */
+        .badge-status {
+            font-size: 0.75rem;
+            padding: 0.35em 0.75em;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hidden anti-forgery field -->
+    @Html.AntiForgeryToken()
+
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <!-- ── Sidebar ── -->
+        <nav id="sidebar">
+            <a class="sidebar-brand" href="/Dashboard">
+                <i class="fas fa-chart-network"></i>
+                <span>AcxiomCRM</span>
+            </a>
+
+            <div class="sidebar-nav">
+                @{
+                    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+                    var currentAction     = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+                    bool IsActive(string ctrl, string action = "") =>
+                        currentController.Equals(ctrl, StringComparison.OrdinalIgnoreCase) &&
+                        (string.IsNullOrEmpty(action) || currentAction.Equals(action, StringComparison.OrdinalIgnoreCase));
+
+                    bool IsController(string ctrl) =>
+                        currentController.Equals(ctrl, StringComparison.OrdinalIgnoreCase);
+                }
+
+                <div class="nav-section-title">Main</div>
+
+                <!-- Dashboard -->
+                <a href="/Dashboard" class="nav-link @(IsActive("Dashboard","Index") ? "active" : "")">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <!-- Customers -->
+                <a href="/Customers" class="nav-link @(IsController("Customers") ? "active" : "")">
+                    <i class="fas fa-users"></i>
+                    <span>Customers</span>
+                </a>
+
+                <!-- Leads -->
+                <a href="/Leads" class="nav-link @(IsController("Leads") ? "active" : "")">
+                    <i class="fas fa-funnel-dollar"></i>
+                    <span>Leads</span>
+                </a>
+
+                <!-- Opportunities -->
+                <a href="/Opportunities" class="nav-link @(IsController("Opportunities") ? "active" : "")">
+                    <i class="fas fa-handshake"></i>
+                    <span>Opportunities</span>
+                </a>
+
+                <div class="nav-section-title">Engagement</div>
+
+                <!-- Follow-Ups -->
+                <a href="/FollowUps" class="nav-link @(IsController("FollowUps") ? "active" : "")">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Follow-Ups</span>
+                </a>
+
+                <!-- Activities -->
+                <a href="/Activities" class="nav-link @(IsController("Activities") ? "active" : "")">
+                    <i class="fas fa-tasks"></i>
+                    <span>Activities</span>
+                </a>
+
+                <div class="nav-section-title">Analytics</div>
+
+                <!-- Reports Dropdown -->
+                <a class="nav-link @(IsController("Reports") ? "active" : "") @(IsController("Reports") ? "" : "collapsed")"
+                   data-bs-toggle="collapse" href="#reportsCollapse" role="button"
+                   aria-expanded="@(IsController("Reports") ? "true" : "false")"
+                   aria-controls="reportsCollapse">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reports</span>
+                    <i class="fas fa-chevron-down ms-auto"></i>
+                </a>
+                <div class="collapse @(IsController("Reports") ? "show" : "")" id="reportsCollapse">
+                    <a href="/Reports/CustomerReport" class="dropdown-item @(IsActive("Reports","CustomerReport") ? "active" : "")">
+                        <i class="fas fa-user-circle"></i> Customer
+                    </a>
+                    <a href="/Reports/LeadReport" class="dropdown-item @(IsActive("Reports","LeadReport") ? "active" : "")">
+                        <i class="fas fa-filter"></i> Lead
+                    </a>
+                    <a href="/Reports/OpportunityReport" class="dropdown-item @(IsActive("Reports","OpportunityReport") ? "active" : "")">
+                        <i class="fas fa-dollar-sign"></i> Opportunity
+                    </a>
+                    <a href="/Reports/PipelineReport" class="dropdown-item @(IsActive("Reports","PipelineReport") ? "active" : "")">
+                        <i class="fas fa-stream"></i> Pipeline
+                    </a>
+                    <a href="/Reports/AuditReport" class="dropdown-item @(IsActive("Reports","AuditReport") ? "active" : "")">
+                        <i class="fas fa-clipboard-list"></i> Audit
+                    </a>
+                </div>
+
+                @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                {
+                    <div class="nav-section-title">Administration</div>
+                }
+
+                @if (User.IsInRole("Admin"))
+                {
+                    <!-- Users (Admin only) -->
+                    <a href="/Users" class="nav-link @(IsController("Users") ? "active" : "")">
+                        <i class="fas fa-user-cog"></i>
+                        <span>Users</span>
+                    </a>
+                }
+
+                @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                {
+                    <!-- Audit Log -->
+                    <a href="/AuditLog" class="nav-link @(IsController("AuditLog") ? "active" : "")">
+                        <i class="fas fa-history"></i>
+                        <span>Audit Log</span>
+                    </a>
+                }
+            </div>
+
+            <div class="sidebar-footer">
+                &copy; @DateTime.Now.Year AcxiomCRM
+            </div>
+        </nav>
+
+        <!-- ── Sidebar Overlay (mobile) ── -->
+        <div id="sidebar-overlay"></div>
+
+        <!-- ── Top Navbar ── -->
+        <nav id="topbar">
+            <button id="sidebar-toggle" title="Toggle Sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <span class="topbar-title">@(ViewData["Title"] ?? "AcxiomCRM")</span>
+
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                <span class="text-muted small d-none d-md-inline">
+                    <i class="fas fa-user-circle me-1 text-primary"></i>
+                    @(UserManager.GetUserName(User))
+                </span>
+
+                @await Html.PartialAsync("_LoginPartial")
+            </div>
+        </nav>
+
+        <!-- ── Main Content ── -->
+        <main id="main-content">
+            @RenderBody()
+        </main>
+    }
+    else
+    {
+        @RenderBody()
+    }
+
+    <!-- ── Toast Container ── -->
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- ── Footer (inside sidebar layout) ── -->
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <script>
+        // ── Sidebar Toggle ──
+        const sidebar         = document.getElementById('sidebar');
+        const topbar          = document.getElementById('topbar');
+        const mainContent     = document.getElementById('main-content');
+        const overlay         = document.getElementById('sidebar-overlay');
+        const sidebarToggle   = document.getElementById('sidebar-toggle');
+
+        function isMobile() { return window.innerWidth < 992; }
+
+        function openMobileSidebar() {
+            sidebar.classList.add('open');
+            overlay.classList.add('visible');
+        }
+
+        function closeMobileSidebar() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('visible');
+        }
+
+        function toggleDesktopSidebar() {
+            const collapsed = sidebar.classList.toggle('collapsed');
+            topbar.classList.toggle('expanded', collapsed);
+            if (mainContent) mainContent.classList.toggle('expanded', collapsed);
+        }
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                if (isMobile()) {
+                    sidebar.classList.contains('open') ? closeMobileSidebar() : openMobileSidebar();
+                } else {
+                    toggleDesktopSidebar();
+                }
+            });
+        }
+
+        if (overlay) {
+            overlay.addEventListener('click', closeMobileSidebar);
+        }
+
+        window.addEventListener('resize', () => {
+            if (!isMobile()) closeMobileSidebar();
+        });
+
+        // ── Toast helper ──
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toast-container');
+            const id = 'toast-' + Date.now();
+            const icons = { success: 'check-circle', danger: 'exclamation-triangle', warning: 'exclamation-circle', info: 'info-circle' };
+            const icon  = icons[type] || 'info-circle';
+            const html  = `
+                <div id="${id}" class="toast align-items-center text-bg-${type} border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fas fa-${icon} me-2"></i>${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>`;
+            toastContainer.insertAdjacentHTML('beforeend', html);
+            const toastEl = document.getElementById(id);
+            new bootstrap.Toast(toastEl, { delay: 4000 }).show();
+            toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+        }
+
+        // Show TempData toasts if present
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>document.addEventListener('DOMContentLoaded', () => showToast('@Html.Raw(TempData["SuccessMessage"])', 'success'));</text>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <text>document.addEventListener('DOMContentLoaded', () => showToast('@Html.Raw(TempData["ErrorMessage"])', 'danger'));</text>
+        }
+        @if (TempData["WarningMessage"] != null)
+        {
+            <text>document.addEventListener('DOMContentLoaded', () => showToast('@Html.Raw(TempData["WarningMessage"])', 'warning'));</text>
+        }
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

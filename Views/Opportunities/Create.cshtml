@@ -1,0 +1,108 @@
+@model AcxiomCRM.Models.Opportunity
+@{
+    ViewData["Title"] = "Create Opportunity";
+    var today = DateTime.Today.ToString("yyyy-MM-dd");
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chart-line me-2" style="color:#6f42c1"></i>Create Opportunity</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Back</a>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+            <div class="row">
+                <div class="col-md-8 mb-3">
+                    <label asp-for="OpportunityName" class="form-label fw-semibold"></label>
+                    <input asp-for="OpportunityName" class="form-control" maxlength="150" placeholder="e.g. Q1 Enterprise Deal" />
+                    <span asp-validation-for="OpportunityName" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="Stage" class="form-label fw-semibold"></label>
+                    <select asp-for="Stage" class="form-select">
+                        <option value="Qualification">Qualification</option>
+                        <option value="Proposal">Proposal</option>
+                        <option value="Negotiation">Negotiation</option>
+                        <option value="Won">Won</option>
+                        <option value="Lost">Lost</option>
+                    </select>
+                    <span asp-validation-for="Stage" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-semibold">Customer</label>
+                    <select asp-for="CustomerId" class="form-select" asp-items="@(ViewData["Customers"] as IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)">
+                        <option value="">-- Select Customer (optional) --</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-semibold">Assigned To</label>
+                    <select asp-for="AssignedTo" class="form-select" asp-items="@(ViewData["AssignedToList"] as IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)">
+                        <option value="">-- Select User --</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="Amount" class="form-label fw-semibold"></label>
+                    <div class="input-group">
+                        <span class="input-group-text">₹</span>
+                        <input asp-for="Amount" class="form-control" type="number" min="0.01" step="0.01"
+                               data-val="true"
+                               data-val-range="Opportunity Amount must be greater than 0."
+                               data-val-range-min="0.01" data-val-range-max="999999999" />
+                    </div>
+                    <span asp-validation-for="Amount" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="Probability" class="form-label fw-semibold"></label>
+                    <div class="input-group">
+                        <input asp-for="Probability" class="form-control" type="number" min="0" max="100"
+                               data-val="true"
+                               data-val-range="Probability must be between 0 and 100."
+                               data-val-range-min="0" data-val-range-max="100"
+                               id="probInput" />
+                        <span class="input-group-text">%</span>
+                    </div>
+                    <span asp-validation-for="Probability" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="ExpectedCloseDate" class="form-label fw-semibold"></label>
+                    <input asp-for="ExpectedCloseDate" class="form-control" type="date" id="closeDate" min="@today" />
+                    <span asp-validation-for="ExpectedCloseDate" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Source" class="form-label fw-semibold"></label>
+                    <select asp-for="Source" class="form-select">
+                        <option value="">-- Select Source --</option>
+                        <option>Inbound</option>
+                        <option>Outbound</option>
+                        <option>Referral</option>
+                        <option>Partner</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div class="col-12 mb-3">
+                    <label asp-for="Notes" class="form-label fw-semibold"></label>
+                    <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Additional notes..."></textarea>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Create Opportunity</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script>
+        // Enforce close date >= today client-side
+        document.getElementById('closeDate').addEventListener('change', function () {
+            var today = new Date().toISOString().split('T')[0];
+            if (this.value < today) {
+                this.setCustomValidity('Expected Close Date cannot be in the past.');
+                this.reportValidity();
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    </script>
+}

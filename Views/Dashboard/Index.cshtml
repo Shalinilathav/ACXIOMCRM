@@ -1,0 +1,444 @@
+@model AcxiomCRM.Models.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+
+    // Serialize chart data safely
+    var leadStatusLabels  = System.Text.Json.JsonSerializer.Serialize(Model.LeadStatusCounts.Keys.ToList());
+    var leadStatusData    = System.Text.Json.JsonSerializer.Serialize(Model.LeadStatusCounts.Values.ToList());
+
+    var pipelineLabels    = System.Text.Json.JsonSerializer.Serialize(Model.OpportunityPipelineAmounts.Keys.ToList());
+    var pipelineData      = System.Text.Json.JsonSerializer.Serialize(Model.OpportunityPipelineAmounts.Values.ToList());
+
+    var monthlyLabels     = System.Text.Json.JsonSerializer.Serialize(Model.MonthlySales.Keys.ToList());
+    var monthlyData       = System.Text.Json.JsonSerializer.Serialize(Model.MonthlySales.Values.ToList());
+}
+
+<!-- ── Page Header ── -->
+<div class="page-header d-flex align-items-center justify-content-between">
+    <div>
+        <h2><i class="fas fa-tachometer-alt me-2 text-primary"></i>Dashboard</h2>
+        <p class="text-muted mb-0 small">Welcome back! Here's what's happening today.</p>
+    </div>
+    <span class="badge bg-primary-subtle text-primary fs-6 px-3 py-2">
+        <i class="fas fa-calendar-day me-1"></i>@DateTime.Now.ToString("dddd, MMM dd yyyy")
+    </span>
+</div>
+
+<!-- ── KPI Cards Row 1 ── -->
+<div class="row g-3 mb-4">
+
+    <!-- Total Customers -->
+    <div class="col-6 col-md-3">
+        <div class="card h-100" style="border-left: 4px solid #4e73df;">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="flex-shrink-0 rounded-circle d-flex align-items-center justify-content-center"
+                     style="width:52px;height:52px;background:rgba(78,115,223,0.12);">
+                    <i class="fas fa-users fa-lg text-primary"></i>
+                </div>
+                <div>
+                    <div class="fs-3 fw-bold text-dark">@Model.TotalCustomers</div>
+                    <div class="text-muted small text-uppercase fw-semibold">Total Customers</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Leads -->
+    <div class="col-6 col-md-3">
+        <div class="card h-100" style="border-left: 4px solid #1cc88a;">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="flex-shrink-0 rounded-circle d-flex align-items-center justify-content-center"
+                     style="width:52px;height:52px;background:rgba(28,200,138,0.12);">
+                    <i class="fas fa-funnel-dollar fa-lg text-success"></i>
+                </div>
+                <div>
+                    <div class="fs-3 fw-bold text-dark">@Model.TotalLeads</div>
+                    <div class="text-muted small text-uppercase fw-semibold">Total Leads</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Open Leads -->
+    <div class="col-6 col-md-3">
+        <div class="card h-100" style="border-left: 4px solid #f6c23e;">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="flex-shrink-0 rounded-circle d-flex align-items-center justify-content-center"
+                     style="width:52px;height:52px;background:rgba(246,194,62,0.12);">
+                    <i class="fas fa-door-open fa-lg text-warning"></i>
+                </div>
+                <div>
+                    <div class="fs-3 fw-bold text-dark">@Model.OpenLeads</div>
+                    <div class="text-muted small text-uppercase fw-semibold">Open Leads</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Open Opportunities -->
+    <div class="col-6 col-md-3">
+        <div class="card h-100" style="border-left: 4px solid #9b59b6;">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="flex-shrink-0 rounded-circle d-flex align-items-center justify-content-center"
+                     style="width:52px;height:52px;background:rgba(155,89,182,0.12);">
+                    <i class="fas fa-handshake fa-lg" style="color:#9b59b6;"></i>
+                </div>
+                <div>
+                    <div class="fs-3 fw-bold text-dark">@Model.OpenOpportunities</div>
+                    <div class="text-muted small text-uppercase fw-semibold">Open Opportunities</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── KPI Cards Row 2 ── -->
+<div class="row g-3 mb-4">
+
+    <!-- Won Opportunities -->
+    <div class="col-6 col-md-3">
+        <div class="card h-100" style="border-left: 4px solid #27ae60;">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="flex-shrink-0 rounded-circle d-flex align-items-center justify-content-center"
+                     style="width:52px;height:52px;background:rgba(39,174,96,0.12);">
+                    <i class="fas fa-trophy fa-lg text-success"></i>
+                </div>
+                <div>
+                    <div class="fs-3 fw-bold text-dark">@Model.WonOpportunities</div>
+                    <div class="text-muted small text-uppercase fw-semibold">Won Opportunities</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lost Opportunities -->
+    <div class="col-6 col-md-3">
+        <div class="card h-100" style="border-left: 4px solid #e74c3c;">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="flex-shrink-0 rounded-circle d-flex align-items-center justify-content-center"
+                     style="width:52px;height:52px;background:rgba(231,76,60,0.12);">
+                    <i class="fas fa-times-circle fa-lg text-danger"></i>
+                </div>
+                <div>
+                    <div class="fs-3 fw-bold text-dark">@Model.LostOpportunities</div>
+                    <div class="text-muted small text-uppercase fw-semibold">Lost Opportunities</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Follow-Ups -->
+    <div class="col-6 col-md-3">
+        <div class="card h-100" style="border-left: 4px solid #f39c12;">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="flex-shrink-0 rounded-circle d-flex align-items-center justify-content-center"
+                     style="width:52px;height:52px;background:rgba(243,156,18,0.12);">
+                    <i class="fas fa-calendar-check fa-lg text-warning"></i>
+                </div>
+                <div>
+                    <div class="fs-3 fw-bold text-dark">@Model.PendingFollowUps</div>
+                    <div class="text-muted small text-uppercase fw-semibold">Pending Follow-Ups</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Pipeline Value -->
+    <div class="col-6 col-md-3">
+        <div class="card h-100" style="border-left: 4px solid #17a2b8;">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="flex-shrink-0 rounded-circle d-flex align-items-center justify-content-center"
+                     style="width:52px;height:52px;background:rgba(23,162,184,0.12);">
+                    <i class="fas fa-dollar-sign fa-lg text-info"></i>
+                </div>
+                <div>
+                    <div class="fs-3 fw-bold text-dark">@Model.TotalPipelineValue.ToString("C0")</div>
+                    <div class="text-muted small text-uppercase fw-semibold">Pipeline Value</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Charts Row ── -->
+<div class="row g-3 mb-4">
+
+    <!-- Lead Status Doughnut -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
+                <h6 class="fw-bold text-primary mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>Lead Status Distribution
+                </h6>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <div style="position:relative;height:240px;width:240px;">
+                    <canvas id="leadStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Opportunity Pipeline Bar -->
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
+                <h6 class="fw-bold text-primary mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Opportunity Pipeline by Stage
+                </h6>
+            </div>
+            <div class="card-body">
+                <div style="position:relative;height:240px;">
+                    <canvas id="pipelineChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Monthly Sales Line Chart ── -->
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
+                <h6 class="fw-bold text-primary mb-0">
+                    <i class="fas fa-chart-line me-2"></i>Monthly Sales Trend
+                </h6>
+            </div>
+            <div class="card-body">
+                <div style="position:relative;height:240px;">
+                    <canvas id="monthlySalesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Bottom Tables Row ── -->
+<div class="row g-3">
+
+    <!-- Upcoming Follow-Ups -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                <h6 class="fw-bold text-primary mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i>Upcoming Follow-Ups
+                </h6>
+                <a href="/FollowUps" class="btn btn-outline-primary btn-sm">View All</a>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.UpcomingFollowUps != null && Model.UpcomingFollowUps.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Subject</th>
+                                    <th>Customer</th>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var fu in Model.UpcomingFollowUps)
+                                {
+                                    <tr>
+                                        <td class="ps-3 fw-semibold">@fu.Subject</td>
+                                        <td class="text-muted">@fu.Customer?.CompanyName</td>
+                                        <td>
+                                            <span class="badge @(fu.FollowUpDate < DateTime.Now ? "bg-danger" : "bg-primary") badge-status">
+                                                @fu.FollowUpDate.ToString("MMM dd")
+                                            </span>
+                                        </td>
+                                        <td class="text-muted small">@fu.FollowUpType</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="p-4 text-center text-muted">
+                        <i class="fas fa-calendar-check fa-2x mb-2 opacity-25"></i>
+                        <p class="mb-0 small">No upcoming follow-ups</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                <h6 class="fw-bold text-primary mb-0">
+                    <i class="fas fa-history me-2"></i>Recent Activity
+                </h6>
+                @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                {
+                    <a href="/AuditLogs" class="btn btn-outline-primary btn-sm">View All</a>
+                }
+            </div>
+            <div class="card-body p-0">
+                @if (Model.RecentActivity != null && Model.RecentActivity.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Action</th>
+                                    <th>Entity</th>
+                                    <th>User</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var activity in Model.RecentActivity)
+                                {
+                                    <tr>
+                                        <td class="ps-3">
+                                            @{
+                                                var actBadge = activity.Action switch {
+                                                    "Create" => "bg-success",
+                                                    "Update" => "bg-warning",
+                                                    "Delete" => "bg-danger",
+                                                    _ => "bg-secondary"
+                                                };
+                                            }
+                                            <span class="badge @actBadge badge-status">@activity.Action</span>
+                                        </td>
+                                        <td class="text-muted small">@activity.EntityName</td>
+                                        <td class="text-muted small">@activity.UserName</td>
+                                        <td class="text-muted small">@activity.CreatedDate.ToString("MM/dd HH:mm")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="p-4 text-center text-muted">
+                        <i class="fas fa-history fa-2x mb-2 opacity-25"></i>
+                        <p class="mb-0 small">No recent activity</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // ── Lead Status Doughnut Chart ──
+        (function () {
+            const labels = @Html.Raw(leadStatusLabels);
+            const data   = @Html.Raw(leadStatusData);
+            const colors = ['#4e73df','#1cc88a','#f6c23e','#e74c3c','#9b59b6','#17a2b8','#fd7e14','#6c757d'];
+
+            new Chart(document.getElementById('leadStatusChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 12, font: { size: 11 } } }
+                    }
+                }
+            });
+        })();
+
+        // ── Opportunity Pipeline Bar Chart ──
+        (function () {
+            const labels = @Html.Raw(pipelineLabels);
+            const data   = @Html.Raw(pipelineData);
+
+            new Chart(document.getElementById('pipelineChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Pipeline Value ($)',
+                        data: data,
+                        backgroundColor: 'rgba(78,115,223,0.8)',
+                        borderColor: '#4e73df',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        hoverBackgroundColor: 'rgba(78,115,223,1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: v => '$' + Number(v).toLocaleString()
+                            },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        })();
+
+        // ── Monthly Sales Line Chart ──
+        (function () {
+            const labels = @Html.Raw(monthlyLabels);
+            const data   = @Html.Raw(monthlyData);
+
+            new Chart(document.getElementById('monthlySalesChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sales Revenue ($)',
+                        data: data,
+                        fill: true,
+                        backgroundColor: 'rgba(28,200,138,0.1)',
+                        borderColor: '#1cc88a',
+                        borderWidth: 2.5,
+                        pointBackgroundColor: '#1cc88a',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: v => '$' + Number(v).toLocaleString()
+                            },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        })();
+    </script>
+}

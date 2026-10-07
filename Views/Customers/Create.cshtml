@@ -1,0 +1,135 @@
+@model AcxiomCRM.Models.Customer
+
+@{
+    ViewData["Title"] = "Create Customer";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="bi bi-person-plus-fill me-2 text-primary"></i>Create Customer</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to List
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="Create" method="post" novalidate>
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="row g-3">
+                <!-- Customer Name -->
+                <div class="col-md-6">
+                    <label asp-for="CustomerName" class="form-label fw-semibold">
+                        Customer Name <span class="text-danger">*</span>
+                    </label>
+                    <input asp-for="CustomerName" class="form-control" placeholder="Enter customer name" />
+                    <span asp-validation-for="CustomerName" class="text-danger small"></span>
+                </div>
+
+                <!-- Email -->
+                <div class="col-md-6">
+                    <label asp-for="Email" class="form-label fw-semibold">
+                        Email <span class="text-danger">*</span>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                        <input asp-for="Email" class="form-control" placeholder="example@email.com" />
+                    </div>
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <!-- Phone -->
+                <div class="col-md-6">
+                    <label asp-for="Phone" class="form-label fw-semibold">Phone</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                        <input asp-for="Phone" class="form-control" placeholder="10-digit phone number"
+                               data-val="true"
+                               data-val-regex="Phone must be a valid 10-digit number."
+                               data-val-regex-pattern="^\d{10}$" />
+                    </div>
+                    <span asp-validation-for="Phone" class="text-danger small"></span>
+                </div>
+
+                <!-- Company Name -->
+                <div class="col-md-6">
+                    <label asp-for="CompanyName" class="form-label fw-semibold">Company Name</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-building"></i></span>
+                        <input asp-for="CompanyName" class="form-control" placeholder="Enter company name" />
+                    </div>
+                    <span asp-validation-for="CompanyName" class="text-danger small"></span>
+                </div>
+
+                <!-- Address -->
+                <div class="col-md-8">
+                    <label asp-for="Address" class="form-label fw-semibold">Address</label>
+                    <input asp-for="Address" class="form-control" placeholder="Street address" />
+                    <span asp-validation-for="Address" class="text-danger small"></span>
+                </div>
+
+                <!-- City -->
+                <div class="col-md-4">
+                    <label asp-for="City" class="form-label fw-semibold">City</label>
+                    <input asp-for="City" class="form-control" placeholder="City" />
+                    <span asp-validation-for="City" class="text-danger small"></span>
+                </div>
+
+                <!-- State -->
+                <div class="col-md-4">
+                    <label asp-for="State" class="form-label fw-semibold">State</label>
+                    <input asp-for="State" class="form-control" placeholder="State" />
+                    <span asp-validation-for="State" class="text-danger small"></span>
+                </div>
+
+                <!-- Status -->
+                <div class="col-md-4">
+                    <label asp-for="Status" class="form-label fw-semibold">
+                        Status <span class="text-danger">*</span>
+                    </label>
+                    <select asp-for="Status" class="form-select">
+                        <option value="">-- Select Status --</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                    <span asp-validation-for="Status" class="text-danger small"></span>
+                </div>
+
+                <!-- Assigned To -->
+                <div class="col-md-4">
+                    <label asp-for="AssignedTo" class="form-label fw-semibold">Assigned To</label>
+                    <select asp-for="AssignedTo" class="form-select"
+                            asp-items="@(ViewBag.Users as SelectList ?? new SelectList(new List<string>()))">
+                        <option value="">-- Unassigned --</option>
+                    </select>
+                    <span asp-validation-for="AssignedTo" class="text-danger small"></span>
+                </div>
+
+                <!-- Notes -->
+                <div class="col-12">
+                    <label asp-for="Notes" class="form-label fw-semibold">Notes</label>
+                    <textarea asp-for="Notes" class="form-control" rows="4"
+                              placeholder="Additional notes about this customer..."></textarea>
+                    <span asp-validation-for="Notes" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="d-flex gap-2 justify-content-end">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-1"></i> Create Customer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

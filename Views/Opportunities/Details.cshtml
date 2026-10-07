@@ -1,0 +1,115 @@
+@model AcxiomCRM.Models.Opportunity
+@{
+    ViewData["Title"] = "Opportunity Details";
+    var stageColors = new Dictionary<string, string> {
+        ["Qualification"]="primary", ["Proposal"]="info", ["Negotiation"]="warning",
+        ["Won"]="success", ["Lost"]="danger"
+    };
+    var stageColor = stageColors.ContainsKey(Model.Stage) ? stageColors[Model.Stage] : "secondary";
+    var isOverdue = Model.ExpectedCloseDate < DateTime.Today && Model.Stage != "Won" && Model.Stage != "Lost";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chart-line me-2" style="color:#6f42c1"></i>Opportunity Details</h2>
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.OpportunityId" class="btn btn-warning"><i class="fas fa-edit me-1"></i>Edit</a>
+        <a asp-action="Index" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Back</a>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>@Model.OpportunityName</strong>
+                <div class="d-flex gap-2">
+                    <span class="badge bg-@stageColor">@Model.Stage</span>
+                    @{
+                        var statusClass = Model.Status == "Won" ? "success" : Model.Status == "Lost" ? "danger" : "info";
+                    }
+                    <span class="badge bg-@statusClass">@Model.Status</span>
+                    @if (isOverdue)
+                    {
+                        <span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1"></i>Overdue</span>
+                    }
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Customer</label>
+                        <div class="fw-semibold">@(Model.Customer?.CustomerName ?? "—")</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Source</label>
+                        <div>@(Model.Source ?? "—")</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="text-muted small">Amount</label>
+                        <div class="fw-bold fs-5 text-primary">₹@Model.Amount.ToString("N2")</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="text-muted small">Probability</label>
+                        <div>
+                            <div class="progress mb-1" style="height:8px">
+                                <div class="progress-bar bg-success" style="width:@Model.Probability%"></div>
+                            </div>
+                            <span class="fw-semibold">@Model.Probability%</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="text-muted small">Weighted Amount</label>
+                        <div class="fw-bold text-success">₹@Model.WeightedAmount.ToString("N2")</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Expected Close Date</label>
+                        <div class="@(isOverdue ? "text-danger fw-bold" : "")">
+                            @Model.ExpectedCloseDate.ToString("dd MMM yyyy")
+                            @if (isOverdue) { <small>(OVERDUE)</small> }
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Created Date</label>
+                        <div>@Model.CreatedDate.ToString("dd MMM yyyy")</div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div class="col-12 mb-3">
+                            <label class="text-muted small">Notes</label>
+                            <div>@Model.Notes</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-light fw-semibold"><i class="fas fa-calendar-check me-1"></i>Related Follow-Ups</div>
+            <div class="card-body p-0">
+                @if (Model.FollowUps?.Any() == true)
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var fu in Model.FollowUps.Take(5))
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="small fw-semibold">@fu.Subject</div>
+                                    <div class="text-muted" style="font-size:.75rem">@fu.FollowUpDate.ToString("dd MMM")</div>
+                                </div>
+                                <span class="badge bg-secondary">@fu.Status</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted p-3 mb-0 small">No follow-ups recorded.</p>
+                }
+            </div>
+            <div class="card-footer">
+                <a asp-controller="FollowUps" asp-action="Create" class="btn btn-sm btn-outline-primary w-100">
+                    <i class="fas fa-plus me-1"></i>Add Follow-Up
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

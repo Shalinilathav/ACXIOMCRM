@@ -1,0 +1,121 @@
+@model AcxiomCRM.Models.Lead
+@{
+    ViewData["Title"] = "Lead Details";
+    var statusColors = new Dictionary<string, string> {
+        ["New"]="primary", ["Contacted"]="info", ["Qualified"]="success",
+        ["Unqualified"]="warning", ["Converted"]="dark", ["Lost"]="danger"
+    };
+    var color = statusColors.ContainsKey(Model.Status) ? statusColors[Model.Status] : "secondary";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-bullseye text-success me-2"></i>Lead Details</h2>
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.LeadId" class="btn btn-warning"><i class="fas fa-edit me-1"></i>Edit</a>
+        @if (Model.Status == "Qualified" && !Model.IsConverted)
+        {
+            <form asp-action="ConvertLead" asp-route-id="@Model.LeadId" method="post"
+                  onsubmit="return confirm('Convert this lead to customer?')">
+                <button type="submit" class="btn btn-success"><i class="fas fa-exchange-alt me-1"></i>Convert</button>
+            </form>
+        }
+        <a asp-action="Index" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Back</a>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>@Model.LeadName</strong>
+                <div class="d-flex gap-2">
+                    <span class="badge bg-@color">@Model.Status</span>
+                    @if (Model.IsConverted)
+                    {
+                        <span class="badge bg-success"><i class="fas fa-check me-1"></i>Converted</span>
+                    }
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Lead Code</label>
+                        <div class="fw-semibold">@Model.LeadCode</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Company</label>
+                        <div>@(Model.CompanyName ?? "—")</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Email</label>
+                        <div><a href="mailto:@Model.Email">@Model.Email</a></div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Phone</label>
+                        <div>@Model.Phone</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Source</label>
+                        <div>@Model.Source</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="text-muted small">Priority</label>
+                        <div>@Model.Priority</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="text-muted small">Expected Value</label>
+                        <div class="fw-semibold text-success">₹@Model.ExpectedValue.ToString("N0")</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Created Date</label>
+                        <div>@Model.CreatedDate.ToString("dd MMM yyyy")</div>
+                    </div>
+                    @if (Model.IsConverted && Model.ConvertedDate.HasValue)
+                    {
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Converted Date</label>
+                            <div class="text-success fw-semibold">@Model.ConvertedDate.Value.ToString("dd MMM yyyy")</div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div class="col-12 mb-3">
+                            <label class="text-muted small">Notes</label>
+                            <div>@Model.Notes</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-light"><i class="fas fa-calendar-check me-1"></i>Related Follow-Ups</div>
+            <div class="card-body p-0">
+                @if (Model.FollowUps?.Any() == true)
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var fu in Model.FollowUps.Take(5))
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="small fw-semibold">@fu.Subject</div>
+                                    <div class="text-muted" style="font-size:0.75rem">@fu.FollowUpDate.ToString("dd MMM")</div>
+                                </div>
+                                <span class="badge bg-secondary">@fu.Status</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted p-3 mb-0 small">No follow-ups recorded.</p>
+                }
+            </div>
+            <div class="card-footer">
+                <a asp-controller="FollowUps" asp-action="Create" asp-route-leadId="@Model.LeadId"
+                   class="btn btn-sm btn-outline-primary w-100">
+                    <i class="fas fa-plus me-1"></i>Add Follow-Up
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,115 @@
+@model AcxiomCRM.Models.Customer
+@{
+    ViewData["Title"] = "Customer Details";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user text-primary me-2"></i>Customer Details</h2>
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.CustomerId" class="btn btn-warning"><i class="fas fa-edit me-1"></i>Edit</a>
+        <a asp-action="Index" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Back</a>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>@Model.CustomerName</strong>
+                @{
+                    var badgeClass = Model.Status == "Active" ? "bg-success" : Model.Status == "Inactive" ? "bg-danger" : "bg-secondary";
+                }
+                <span class="badge @badgeClass">@Model.Status</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Customer Code</label>
+                        <div class="fw-semibold">@Model.CustomerCode</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Email</label>
+                        <div><a href="mailto:@Model.Email">@Model.Email</a></div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Phone</label>
+                        <div>@Model.Phone</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Company Name</label>
+                        <div>@(Model.CompanyName ?? "—")</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Address</label>
+                        <div>@(Model.Address ?? "—")</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="text-muted small">City</label>
+                        <div>@(Model.City ?? "—")</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="text-muted small">State</label>
+                        <div>@(Model.State ?? "—")</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Created Date</label>
+                        <div>@Model.CreatedDate.ToString("dd MMM yyyy")</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Last Modified</label>
+                        <div>@(Model.ModifiedDate?.ToString("dd MMM yyyy") ?? "—")</div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div class="col-12 mb-3">
+                            <label class="text-muted small">Notes</label>
+                            <div>@Model.Notes</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-light"><i class="fas fa-calendar-check me-1"></i>Related Follow-Ups</div>
+            <div class="card-body p-0">
+                @if (Model.FollowUps?.Any() == true)
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var fu in Model.FollowUps.Take(5))
+                        {
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="small">@fu.Subject</span>
+                                <span class="badge bg-secondary">@fu.Status</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted p-3 mb-0 small">No follow-ups recorded.</p>
+                }
+            </div>
+        </div>
+        <div class="card shadow-sm">
+            <div class="card-header bg-light"><i class="fas fa-bullseye me-1"></i>Related Leads</div>
+            <div class="card-body p-0">
+                @if (Model.Leads?.Any() == true)
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var lead in Model.Leads.Take(5))
+                        {
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="small">@lead.LeadName</span>
+                                <span class="badge bg-info text-dark">@lead.Status</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted p-3 mb-0 small">No leads recorded.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

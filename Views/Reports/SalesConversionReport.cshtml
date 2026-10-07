@@ -1,0 +1,97 @@
+@{
+    ViewData["Title"] = "Sales & Conversion Report";
+    int totalLeads     = (int)(ViewData["TotalLeads"] ?? 0);
+    int converted      = (int)(ViewData["ConvertedLeads"] ?? 0);
+    int openLeads      = (int)(ViewData["OpenLeads"] ?? 0);
+    int lostLeads      = (int)(ViewData["LostLeads"] ?? 0);
+    int totalOpps      = (int)(ViewData["TotalOpps"] ?? 0);
+    int wonOpps        = (int)(ViewData["WonOpps"] ?? 0);
+    int lostOpps       = (int)(ViewData["LostOpps"] ?? 0);
+    decimal wonAmount  = (decimal)(ViewData["WonAmount"] ?? 0m);
+    double convRate    = totalLeads > 0 ? Math.Round((double)converted / totalLeads * 100, 1) : 0;
+    double winRate     = totalOpps  > 0 ? Math.Round((double)wonOpps  / totalOpps  * 100, 1) : 0;
+    var users = ViewData["Users"] as IEnumerable<AcxiomCRM.Models.ApplicationUser> ?? Enumerable.Empty<AcxiomCRM.Models.ApplicationUser>();
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold text-success"><i class="fas fa-chart-line me-2"></i>Sales & Conversion Report</h2>
+    </div>
+
+    <!-- Filter -->
+    @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <form method="get" class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Owner</label>
+                        <select name="owner" class="form-select">
+                            <option value="">-- All Users --</option>
+                            @foreach (var u in users)
+                            {
+                                <option value="@u.Id" selected="@(ViewData["Owner"]?.ToString() == u.Id)">@u.FullName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i>Filter</button>
+                        <a asp-action="SalesConversionReport" class="btn btn-outline-secondary w-100"><i class="bi bi-x-lg"></i></a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    <!-- KPI Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <div class="fs-1 fw-bold text-primary">@totalLeads</div>
+                <div class="text-muted small">Total Leads</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <div class="fs-1 fw-bold text-success">@converted</div>
+                <div class="text-muted small">Converted Leads</div>
+                <div class="badge bg-success mt-1">@convRate%</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <div class="fs-1 fw-bold text-warning">@wonOpps</div>
+                <div class="text-muted small">Won Opportunities</div>
+                <div class="badge bg-warning text-dark mt-1">@winRate% win rate</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <div class="fs-1 fw-bold text-success">₹@wonAmount.ToString("N0")</div>
+                <div class="text-muted small">Total Won Amount</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Table -->
+    <div class="card shadow-sm">
+        <div class="card-header fw-semibold">Conversion Summary</div>
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr><th>Metric</th><th>Count</th><th>Percentage</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Total Leads</td><td>@totalLeads</td><td>100%</td></tr>
+                    <tr class="table-success"><td>Converted to Customer/Opportunity</td><td>@converted</td><td>@convRate%</td></tr>
+                    <tr><td>Open / In Progress</td><td>@openLeads</td><td>@(totalLeads>0?Math.Round((double)openLeads/totalLeads*100,1):0)%</td></tr>
+                    <tr class="table-danger"><td>Lost Leads</td><td>@lostLeads</td><td>@(totalLeads>0?Math.Round((double)lostLeads/totalLeads*100,1):0)%</td></tr>
+                    <tr class="table-light fw-semibold"><td colspan="3">Opportunities</td></tr>
+                    <tr><td>Total Opportunities</td><td>@totalOpps</td><td>100%</td></tr>
+                    <tr class="table-success"><td>Won</td><td>@wonOpps</td><td>@winRate%</td></tr>
+                    <tr class="table-danger"><td>Lost</td><td>@lostOpps</td><td>@(totalOpps>0?Math.Round((double)lostOpps/totalOpps*100,1):0)%</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

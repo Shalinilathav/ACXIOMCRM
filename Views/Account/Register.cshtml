@@ -1,0 +1,172 @@
+@model AcxiomCRM.Models.ViewModels.RegisterViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register – AcxiomCRM</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a2035 0%, #2d3757 60%, #4e73df 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 2rem 0;
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 480px;
+            border-radius: 1rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .auth-header {
+            background: linear-gradient(135deg, #4e73df, #224abe);
+            color: #fff;
+            border-radius: 1rem 1rem 0 0;
+            padding: 2rem;
+            text-align: center;
+        }
+        .auth-header i { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .auth-body {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 0 0 1rem 1rem;
+        }
+        .form-floating label { color: #6c757d; }
+        .btn-register {
+            background: linear-gradient(135deg, #4e73df, #224abe);
+            border: none;
+            color: #fff;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            padding: 0.65rem 1rem;
+        }
+        .btn-register:hover { opacity: 0.9; color: #fff; }
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #adb5bd;
+            font-size: 0.8rem;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-top: 1px solid #dee2e6;
+        }
+        .password-strength { height: 4px; border-radius: 2px; transition: width 0.3s, background-color 0.3s; }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <div class="auth-header">
+            <i class="fas fa-chart-network d-block"></i>
+            <h3 class="fw-bold mb-0">AcxiomCRM</h3>
+            <p class="mb-0 opacity-75 small">Create a new account</p>
+        </div>
+        <div class="auth-body">
+            <h5 class="fw-semibold mb-1">Register</h5>
+            <p class="text-muted small mb-4">Fill in the details below to get started</p>
+
+            <div asp-validation-summary="All" class="alert alert-danger py-2 small" role="alert"></div>
+
+            <form asp-controller="Account" asp-action="Register" method="post" asp-antiforgery="true">
+
+                <!-- Full Name -->
+                <div class="form-floating mb-3">
+                    <input asp-for="FullName" class="form-control" id="fullName" placeholder="Full Name" autocomplete="name" />
+                    <label for="fullName"><i class="fas fa-id-card me-2 text-muted"></i>Full Name</label>
+                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                </div>
+
+                <!-- Email -->
+                <div class="form-floating mb-3">
+                    <input asp-for="Email" class="form-control" id="email" placeholder="name@example.com" autocomplete="username" />
+                    <label for="email"><i class="fas fa-envelope me-2 text-muted"></i>Email Address</label>
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <!-- Role -->
+                <div class="form-floating mb-3">
+                    <select asp-for="Role" class="form-select" id="role">
+                        <option value="">-- Select Role --</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Manager">Manager</option>
+                        <option value="SalesExecutive">Sales Executive</option>
+                    </select>
+                    <label for="role"><i class="fas fa-user-shield me-2 text-muted"></i>Role</label>
+                    <span asp-validation-for="Role" class="text-danger small"></span>
+                </div>
+
+                <!-- Password -->
+                <div class="form-floating mb-1">
+                    <input asp-for="Password" class="form-control" id="password" placeholder="Password" autocomplete="new-password" />
+                    <label for="password"><i class="fas fa-lock me-2 text-muted"></i>Password</label>
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <div class="progress" style="height:4px;">
+                        <div id="strengthBar" class="progress-bar password-strength" role="progressbar" style="width:0%"></div>
+                    </div>
+                    <small id="strengthLabel" class="text-muted"></small>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="form-floating mb-4">
+                    <input asp-for="ConfirmPassword" class="form-control" id="confirmPassword" placeholder="Confirm Password" autocomplete="new-password" />
+                    <label for="confirmPassword"><i class="fas fa-lock me-2 text-muted"></i>Confirm Password</label>
+                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                </div>
+
+                <button type="submit" class="btn btn-register w-100 rounded-pill mb-3">
+                    <i class="fas fa-user-plus me-2"></i>Create Account
+                </button>
+
+                <div class="divider my-3">or</div>
+
+                <div class="text-center">
+                    <span class="text-muted small">Already have an account?</span>
+                    <a asp-controller="Account" asp-action="Login" class="small fw-semibold ms-1 text-decoration-none">Sign In</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        // Password strength indicator
+        document.getElementById('password').addEventListener('input', function () {
+            const val = this.value;
+            let score = 0;
+            if (val.length >= 8)  score++;
+            if (/[A-Z]/.test(val)) score++;
+            if (/[0-9]/.test(val)) score++;
+            if (/[^A-Za-z0-9]/.test(val)) score++;
+
+            const bar    = document.getElementById('strengthBar');
+            const label  = document.getElementById('strengthLabel');
+            const levels = [
+                { pct: '0%',   cls: '',         txt: '' },
+                { pct: '25%',  cls: 'bg-danger', txt: 'Weak' },
+                { pct: '50%',  cls: 'bg-warning', txt: 'Fair' },
+                { pct: '75%',  cls: 'bg-info',    txt: 'Good' },
+                { pct: '100%', cls: 'bg-success',  txt: 'Strong' },
+            ];
+            const lvl = levels[score];
+            bar.style.width = lvl.pct;
+            bar.className   = 'progress-bar password-strength ' + lvl.cls;
+            label.textContent = lvl.txt;
+        });
+    </script>
+</body>
+</html>

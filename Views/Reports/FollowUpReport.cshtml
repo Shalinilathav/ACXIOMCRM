@@ -1,0 +1,189 @@
+@model IEnumerable<AcxiomCRM.Models.FollowUp>
+@{
+    ViewData["Title"] = "Follow-Up Report";
+    var today = DateTime.Today;
+    int plannedCount = Model.Count(f => f.Status == "Planned");
+    int completedCount = Model.Count(f => f.Status == "Completed");
+    int missedCount = Model.Count(f => f.Status == "Missed");
+    int cancelledCount = Model.Count(f => f.Status == "Cancelled");
+    int overdueCount = Model.Count(f => f.Status == "Planned" && f.FollowUpDate.Date < today);
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold text-primary"><i class="bi bi-alarm me-2"></i>Follow-Up Report</h2>
+        <a href="javascript:window.print()" class="btn btn-outline-secondary">
+            <i class="bi bi-printer me-1"></i>Print
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="FollowUpReport" class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">-- All --</option>
+                        <option value="Planned" selected="@(Context.Request.Query["status"] == "Planned" ? "selected" : null)">Planned</option>
+                        <option value="Completed" selected="@(Context.Request.Query["status"] == "Completed" ? "selected" : null)">Completed</option>
+                        <option value="Missed" selected="@(Context.Request.Query["status"] == "Missed" ? "selected" : null)">Missed</option>
+                        <option value="Cancelled" selected="@(Context.Request.Query["status"] == "Cancelled" ? "selected" : null)">Cancelled</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Type</label>
+                    <select name="type" class="form-select">
+                        <option value="">-- All --</option>
+                        <option value="Call" selected="@(Context.Request.Query["type"] == "Call" ? "selected" : null)">Call</option>
+                        <option value="Email" selected="@(Context.Request.Query["type"] == "Email" ? "selected" : null)">Email</option>
+                        <option value="Meeting" selected="@(Context.Request.Query["type"] == "Meeting" ? "selected" : null)">Meeting</option>
+                        <option value="Visit" selected="@(Context.Request.Query["type"] == "Visit" ? "selected" : null)">Visit</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Assigned To</label>
+                    <input type="text" name="assignedUser" class="form-control" placeholder="User..."
+                           value="@Context.Request.Query["assignedUser"]" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">From Date</label>
+                    <input type="date" name="fromDate" class="form-control" value="@Context.Request.Query["fromDate"]" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">To Date</label>
+                    <input type="date" name="toDate" class="form-control" value="@Context.Request.Query["toDate"]" />
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-1"></i>Filter
+                    </button>
+                    <a asp-action="FollowUpReport" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Summary Counts -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-2">
+            <div class="card border-primary text-center shadow-sm">
+                <div class="card-body py-3">
+                    <div class="fs-2 fw-bold text-primary">@Model.Count()</div>
+                    <div class="text-muted small">Total</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-primary text-center shadow-sm">
+                <div class="card-body py-3">
+                    <div class="fs-2 fw-bold text-primary">@plannedCount</div>
+                    <div class="text-muted small">Planned</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-success text-center shadow-sm">
+                <div class="card-body py-3">
+                    <div class="fs-2 fw-bold text-success">@completedCount</div>
+                    <div class="text-muted small">Completed</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-danger text-center shadow-sm">
+                <div class="card-body py-3">
+                    <div class="fs-2 fw-bold text-danger">@missedCount</div>
+                    <div class="text-muted small">Missed</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-secondary text-center shadow-sm">
+                <div class="card-body py-3">
+                    <div class="fs-2 fw-bold text-secondary">@cancelledCount</div>
+                    <div class="text-muted small">Cancelled</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-danger text-center shadow-sm">
+                <div class="card-body py-3">
+                    <div class="fs-2 fw-bold text-danger">@overdueCount</div>
+                    <div class="text-muted small">Overdue</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox fs-1"></i>
+                    <p class="mt-2">No follow-ups match the filters.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Subject</th>
+                                <th>Type</th>
+                                <th>Follow-Up Date</th>
+                                <th>Status</th>
+                                <th>Customer</th>
+                                <th>Lead</th>
+                                <th>Assigned To</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{int idx = 1;}
+                            @foreach (var f in Model)
+                            {
+                                bool isOverdue = f.Status == "Planned" && f.FollowUpDate.Date < today;
+                                string statusBadge = f.Status switch
+                                {
+                                    "Planned" => "bg-primary",
+                                    "Completed" => "bg-success",
+                                    "Missed" => "bg-danger",
+                                    "Cancelled" => "bg-secondary",
+                                    _ => "bg-secondary"
+                                };
+                                <tr style="@(isOverdue ? "background-color:#ffe5e5;" : "")">
+                                    <td class="text-muted small">@idx</td>
+                                    <td>
+                                        @if (isOverdue)
+                                        {
+                                            <i class="bi bi-exclamation-triangle-fill text-danger me-1"></i>
+                                        }
+                                        <strong>@f.Subject</strong>
+                                    </td>
+                                    <td><span class="badge bg-info text-dark">@f.FollowUpType</span></td>
+                                    <td class="@(isOverdue ? "text-danger fw-semibold" : "")">
+                                        @f.FollowUpDate.ToString("dd MMM yyyy")
+                                    </td>
+                                    <td><span class="badge @statusBadge">@f.Status</span></td>
+                                    <td>@(f.Customer != null ? f.Customer.CustomerName : "-")</td>
+                                    <td>@(f.Lead != null ? f.Lead.LeadName : "-")</td>
+                                    <td>@(f.AssignedTo != null ? f.AssignedTo : "-")</td>
+                                    <td class="small text-muted" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                                        title="@f.Remarks">@f.Remarks</td>
+                                </tr>
+                                idx++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
