@@ -34,21 +34,21 @@ cd ACXIOMCRM
 
 ### 2. Run the application
 
-**If .NET SDK is in PATH:**
 ```bash
 dotnet run --urls "http://localhost:5000"
 ```
 
-**If using custom .NET location (Windows):**
+**If .NET is not in your PATH:**
 ```powershell
-$env:DOTNET_ROOT = "C:\Users\Vamsi\.dotnet"
-$env:PATH = "C:\Users\Vamsi\.dotnet;$env:PATH"
+# Windows (PowerShell)
+$env:DOTNET_ROOT = "C:\path\to\.dotnet"
+$env:PATH = "C:\path\to\.dotnet;$env:PATH"
 dotnet run --project AcxiomCRM.csproj --urls "http://localhost:5000"
-```
 
-**Using the full path to the project (cross-platform):**
-```bash
-dotnet run --project /path/to/AcxiomCRM.csproj --urls "http://localhost:5000"
+# Linux/macOS
+export DOTNET_ROOT=/path/to/.dotnet
+export PATH=$DOTNET_ROOT:$PATH
+dotnet run --project AcxiomCRM.csproj --urls "http://localhost:5000"
 ```
 
 The database is created and seed users are created automatically on first run.
