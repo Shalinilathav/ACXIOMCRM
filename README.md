@@ -60,12 +60,6 @@ Navigate to:
 http://localhost:5000
 ```
 
-The app will automatically:
-- ✅ Create `AcxiomCRM.db` SQLite database
-- ✅ Run EF Core migrations
-- ✅ Seed default users (Admin, Manager, Sales Executive)
-- ✅ Create required roles (Admin, Manager, SalesExecutive)
-
 ### 4. Stop the application
 
 Press `Ctrl+C` in the terminal where the app is running.
